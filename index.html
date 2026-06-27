@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ADS Portal Tecnico</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif}
+:root{--gold:#C8920A;--dark:#111;--d2:#1a1a1a;--d3:#222;--d4:#2c2c2c;--d5:#333;--text:#f0f0f0;--muted:#888;--dim:#444}
+body{background:var(--dark);color:var(--text);min-height:100vh}
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.on{display:flex}
+/* TOPBAR */
+.topbar{background:var(--dark);border-bottom:1px solid var(--d4);padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.brand{font-size:18px;font-weight:900;letter-spacing:2px;cursor:pointer}
+.brand span{color:var(--gold)}
+.tbr{display:flex;align-items:center;gap:10px}
+.chip{font-size:11px;color:var(--muted);background:var(--d3);padding:3px 10px;border-radius:20px;border:1px solid var(--d5)}
+.av{width:30px;height:30px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#111}
+/* BUTTONS */
+.btn{padding:8px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px}
+.btn-g{background:var(--gold);color:#111;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.btn-g:hover{background:#E8A800}
+.btn-o{background:transparent;border:1px solid var(--d5);color:var(--muted)}
+.btn-o:hover{border-color:var(--gold);color:var(--gold)}
+.btn-s{padding:5px 12px;font-size:11px}
+.btn-exit{background:transparent;border:1px solid var(--d5);color:var(--muted);padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer}
+.btn-exit:hover{border-color:#f09595;color:#f09595}
+/* BADGES */
+.bg{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.bh{background:rgba(226,75,74,.15);color:#f09595;border:1px solid rgba(226,75,74,.3)}
+.bm{background:rgba(239,159,39,.15);color:#fac775;border:1px solid rgba(239,159,39,.3)}
+.bl{background:rgba(99,153,34,.15);color:#97c459;border:1px solid rgba(99,153,34,.3)}
+.bo{background:rgba(200,146,10,.12);color:#F5C842;border:1px solid rgba(200,146,10,.25)}
+.bp{background:rgba(56,120,200,.12);color:#85b7eb;border:1px solid rgba(56,120,200,.25)}
+.bd{background:rgba(99,153,34,.12);color:#97c459;border:1px solid rgba(99,153,34,.25)}
+/* LOGIN */
+#s-login{align-items:center;justify-content:center}
+.lw{display:grid;grid-template-columns:1fr 1fr;max-width:700px;width:90%;background:var(--d2);border:1px solid var(--d4);border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.ll{background:var(--dark);padding:2.5rem;display:flex;flex-direction:column;gap:1.5rem;border-right:1px solid var(--d4)}
+.ads-big{font-size:40px;font-weight:900;letter-spacing:2px}
+.ads-big span{color:var(--gold)}
+.gold-line{width:36px;height:3px;background:var(--gold);border-radius:2px;margin:6px 0}
+.brand-sub{font-size:9px;color:var(--muted);letter-spacing:3px;text-transform:uppercase}
+.feats{display:flex;flex-direction:column;gap:9px;margin-top:auto}
+.feat{display:flex;align-items:center;gap:9px;font-size:11px;color:var(--muted)}
+.fdot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0}
+.lr{padding:2rem;display:flex;flex-direction:column;gap:0}
+.lr h2{font-size:16px;font-weight:700;margin-bottom:4px}
+.lr p{font-size:11px;color:var(--muted);margin-bottom:1.2rem}
+.rtabs{display:grid;grid-template-columns:1fr 1fr;background:var(--dark);border:1px solid var(--d4);border-radius:8px;overflow:hidden;margin-bottom:1rem}
+.rtab{padding:10px;text-align:center;cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;transition:.15s}
+.rtab.on{background:var(--d2);border-bottom-color:var(--gold)}
+.rtab .ri{font-size:15px;color:var(--muted);display:block;margin-bottom:2px}
+.rtab.on .ri{color:var(--gold)}
+.rtab .rl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.rtab.on .rl{color:var(--text)}
+.rtab .rd{font-size:9px;color:var(--dim)}
+.fld{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.fld label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+.fld label .r{color:var(--gold)}
+.fld input,.fld select,.fld textarea{background:var(--dark);border:1px solid var(--d5);border-radius:6px;padding:9px 12px;font-size:13px;color:var(--text);outline:none;width:100%}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--gold)}
+.fld input::placeholder,.fld textarea::placeholder{color:var(--dim)}
+.fld select option{background:var(--d2)}
+.fld textarea{resize:vertical;min-height:90px;line-height:1.6}
+.adm-ex{display:none;flex-direction:column;gap:10px}
+.adm-ex.on{display:flex}
+.divrow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.divrow .dl{flex:1;height:.5px;background:var(--d5)}
+.divrow span{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+.hintbox{background:rgba(200,146,10,.07);border:1px solid rgba(200,146,10,.18);border-radius:6px;padding:8px 10px;font-size:10px;color:var(--muted);line-height:1.6;margin-top:.8rem}
+/* DASHBOARD */
+#s-dash .body{flex:1;padding:20px;display:flex;flex-direction:column;gap:14px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.sc{background:var(--d2);border:1px solid var(--d4);border-radius:8px;padding:14px 16px;position:relative;overflow:hidden}
+.sc::before{content:'';position:absolute;left:0;top:0;width:3px;height:100%}
+.sc.a::before{background:var(--gold)}.sc.h::before{background:#e24b4a}.sc.m::before{background:#ef9f27}.sc.o::before{background:#639922}
+.sn{font-size:24px;font-weight:800;line-height:1}
+.sl{font-size:10px;color:var(--muted);margin-top:4px}
+.tbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.srch{display:flex;align-items:center;gap:6px;background:var(--d2);border:1px solid var(--d5);border-radius:6px;padding:6px 10px;flex:1;max-width:280px}
+.srch input{background:transparent;border:none;outline:none;font-size:12px;color:var(--text);width:100%}
+.srch input::placeholder{color:var(--dim)}
+.flt{background:var(--d2);border:1px solid var(--d5);border-radius:6px;padding:6px 10px;font-size:11px;color:var(--muted);outline:none;cursor:pointer}
+.flt option{background:var(--d2)}
+.tw{background:var(--d2);border:1px solid var(--d4);border-radius:10px;overflow:hidden}
+.th{display:grid;grid-template-columns:80px 1fr 130px 90px 80px 80px 95px;background:var(--dark);border-bottom:1px solid var(--d4)}
+.th div{padding:8px 12px;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.tr{display:grid;grid-template-columns:80px 1fr 130px 90px 80px 80px 95px;border-bottom:1px solid var(--d4);align-items:center;cursor:pointer;transition:.12s}
+.tr:hover{background:var(--d3)}.tr:last-child{border-bottom:none}
+.td{padding:10px 12px;font-size:12px}
+.tid{font-weight:700;color:#E8A800}
+.tsub{color:var(--muted);font-size:11px;margin-top:1px}
+.rbtns{display:flex;gap:4px}
+.ib{width:26px;height:26px;border:1px solid var(--d5);border-radius:4px;background:transparent;cursor:pointer;color:var(--muted);font-size:11px;transition:.12s;display:flex;align-items:center;justify-content:center}
+.ib:hover{border-color:var(--gold);color:var(--gold)}
+.ib.del:hover{border-color:#f09595;color:#f09595}
+.empty{padding:3rem;text-align:center;color:var(--muted)}
+/* FORM */
+#s-form .body{flex:1;padding:20px;max-width:860px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:14px}
+.fsec{background:var(--d2);border:1px solid var(--d4);border-radius:10px;overflow:hidden}
+.ftit{font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;padding:10px 16px;background:var(--dark);border-bottom:1px solid var(--d4)}
+.fbody{padding:16px;display:flex;flex-direction:column;gap:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.svs{display:flex;gap:8px}
+.sv{padding:6px 16px;border-radius:20px;border:1px solid var(--d5);background:transparent;font-size:11px;font-weight:700;cursor:pointer;color:var(--muted);text-transform:uppercase}
+.sv.h{background:rgba(226,75,74,.15);border-color:rgba(226,75,74,.5);color:#f09595}
+.sv.m{background:rgba(239,159,39,.15);border-color:rgba(239,159,39,.5);color:#fac775}
+.sv.l{background:rgba(99,153,34,.15);border-color:rgba(99,153,34,.5);color:#97c459}
+.moneyw{position:relative}
+.moneyw::before{content:'$';position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--gold);font-weight:700;z-index:1}
+.moneyw input{padding-left:24px}
+.upzone{border:1px dashed var(--d5);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:.15s;background:var(--dark)}
+.upzone:hover{border-color:var(--gold)}
+.upzone div{font-size:12px;color:var(--muted);margin-top:4px}
+.upzone small{font-size:10px;color:var(--dim)}
+.flist{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.fi{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--d3);border-radius:6px;border:1px solid var(--d4)}
+.fin{font-size:11px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fis{font-size:10px;color:var(--muted)}
+.fid{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:14px}
+.fid:hover{color:#f09595}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:10px}
+.pcard{background:var(--d3);border:1px solid var(--d4);border-radius:6px;overflow:hidden}
+.pcard img{width:100%;height:90px;object-fit:cover;display:block}
+.pcap{padding:5px 7px;border-top:1px solid var(--d4)}
+.pcap input{background:transparent;border:none;outline:none;font-size:10px;color:var(--text);width:100%}
+.pcap input::placeholder{color:var(--dim)}
+.pdel{display:block;text-align:center;padding:3px;background:var(--d4);font-size:10px;color:var(--muted);cursor:pointer;border:none;width:100%}
+.pdel:hover{background:rgba(226,75,74,.15);color:#f09595}
+.factions{display:flex;gap:10px;justify-content:flex-end;padding-bottom:1rem}
+/* DETAIL */
+#s-det .body{flex:1;padding:20px;max-width:900px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:14px}
+.dhc{background:var(--d2);border:1px solid var(--d4);border-radius:10px;padding:16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.dtit{font-size:16px;font-weight:700;margin-bottom:6px}
+.dmeta{display:flex;flex-wrap:wrap;gap:10px}
+.dmi{font-size:11px;color:var(--muted)}
+.da{display:flex;gap:7px;flex-wrap:wrap}
+.card{background:var(--d2);border:1px solid var(--d4);border-radius:10px;overflow:hidden}
+.stit{font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;padding:10px 16px;background:var(--dark);border-bottom:1px solid var(--d4)}
+.igrid{display:grid;grid-template-columns:repeat(4,1fr)}
+.ic{padding:10px 14px;border-right:1px solid var(--d4);border-bottom:1px solid var(--d4)}
+.ic:nth-child(4n){border-right:none}
+.ic:nth-last-child(-n+4){border-bottom:none}
+.icl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.icv{font-size:12px;font-weight:600}
+.alist{padding:14px 16px;display:flex;flex-direction:column;gap:5px}
+.ai{display:flex;gap:8px;font-size:12px;color:var(--muted);line-height:1.5}
+.ad{color:var(--gold);flex-shrink:0}
+.nb{padding:14px 16px}
+.nc{background:rgba(200,146,10,.06);border:1px solid rgba(200,146,10,.18);border-radius:6px;padding:10px 12px;font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:8px}
+.nau{font-size:10px;color:var(--gold);margin-top:5px}
+.nadd{border:1px dashed rgba(200,146,10,.3);border-radius:6px;padding:8px;text-align:center;font-size:11px;color:var(--gold);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;background:transparent;width:100%}
+.dlist{padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.di{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--d3);border-radius:6px;border:1px solid var(--d4)}
+.dn{font-size:12px;flex:1}
+.dm{font-size:10px;color:var(--muted)}
+.ggrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 16px}
+.gi{border-radius:6px;overflow:hidden;border:1px solid var(--d4)}
+.gm{height:70px;background:var(--d3);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--dim)}
+.gm img{width:100%;height:70px;object-fit:cover;display:block}
+.gc{padding:4px 6px;font-size:10px;color:var(--muted);border-top:1px solid var(--d4)}
+.ca{font-size:26px;font-weight:800;color:var(--gold);padding:14px 16px}
+.cas{font-size:11px;color:var(--muted);margin-top:3px}
+.dfooter{display:flex;gap:8px;justify-content:flex-end;padding:10px 14px;background:var(--dark);border-top:1px solid var(--d4)}
+.ssel{background:var(--d3);border:1px solid var(--d5);border-radius:6px;padding:5px 8px;font-size:11px;color:var(--text);outline:none;cursor:pointer}
+.ssel option{background:var(--d2)}
+/* MODAL */
+.mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center}
+.mbg.on{display:flex}
+.mod{background:var(--d2);border:1px solid var(--d4);border-radius:12px;padding:1.5rem;width:90%;max-width:440px}
+.mod h3{font-size:15px;font-weight:700;margin-bottom:4px}
+.mod p{font-size:11px;color:var(--muted);margin-bottom:1rem}
+.mact{display:flex;gap:8px;justify-content:flex-end;margin-top:1rem}
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--d2);border:1px solid var(--gold);color:var(--gold);padding:10px 20px;border-radius:8px;font-size:12px;font-weight:600;display:none;z-index:300}
+@media(max-width:600px){
+.lw{grid-template-columns:1fr}.ll{display:none}
+.th,.tr{grid-template-columns:70px 1fr 70px 80px}
+.th div:nth-child(3),.th div:nth-child(5),.th div:nth-child(6),.td:nth-child(3),.td:nth-child(5),.td:nth-child(6){display:none}
+.stats{grid-template-columns:1fr 1fr}.g2,.g3{grid-template-columns:1fr}
+.igrid{grid-template-columns:1fr 1fr}.ggrid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="screen on" id="s-login">
+<div class="lw">
+<div class="ll">
+  <div>
+    <div class="ads-big">A<span>D</span>S</div>
+    <div class="gold-line"></div>
+    <div class="brand-sub">Atlantic Diesel Service</div>
+  </div>
+  <div class="feats">
+    <div class="feat"><span class="fdot"></span>Registro de reportes desde campo</div>
+    <div class="feat"><span class="fdot"></span>Costo del servicio y forma de pago</div>
+    <div class="feat"><span class="fdot"></span>Remisiones y actas de entrega</div>
+    <div class="feat"><span class="fdot"></span>Evidencias fotograficas por caso</div>
+    <div class="feat"><span class="fdot"></span>Exportacion a PDF profesional</div>
+    <div class="feat"><span class="fdot"></span>Panel administrativo completo</div>
+  </div>
+  <div style="font-size:9px;color:var(--dim)">2026 Atlantic Diesel Service Barranquilla</div>
+</div>
+<div class="lr">
+  <h2>Ingresar al portal</h2>
+  <p>Selecciona tu rol para continuar</p>
+  <div class="rtabs">
+    <button class="rtab on" id="tab-tec" onclick="setRol('tec')">
+      <span class="ri">T</span><span class="rl">Tecnico</span><span class="rd">Acceso de campo</span>
+    </button>
+    <button class="rtab" id="tab-adm" onclick="setRol('adm')">
+      <span class="ri">A</span><span class="rl">Admin</span><span class="rd">Acceso total</span>
+    </button>
+  </div>
+  <div class="fld">
+    <label>Numero de cedula <span class="r">*</span></label>
+    <input type="text" id="inp-ced" placeholder="Ej. 1045678912">
+  </div>
+  <div class="adm-ex" id="adm-ex">
+    <div class="divrow"><div class="dl"></div><span>Solo admin</span><div class="dl"></div></div>
+    <div class="fld">
+      <label>Contrasena <span class="r">*</span></label>
+      <input type="password" id="inp-pwd" placeholder="admin123">
+    </div>
+  </div>
+  <button class="btn btn-g" id="btn-login" style="width:100%;justify-content:center;padding:11px" onclick="doLogin()">Ingresar como Tecnico</button>
+  <div class="hintbox" id="hint">Tecnico: ingresa cualquier cedula. Admin: cedula=admin123 pass=admin123</div>
+</div>
+</div>
+</div>
+
+<div class="screen" id="s-dash">
+<div class="topbar">
+  <div class="brand" onclick="ir('dash')">A<span style="color:var(--gold)">D</span>S <span style="font-size:10px;font-weight:400;color:var(--muted);letter-spacing:1px">PORTAL</span></div>
+  <div class="tbr">
+    <span class="chip" id="chip">Tecnico</span>
+    <div class="av" id="av1">T</div>
+    <button class="btn-exit" onclick="salir()">Salir</button>
+  </div>
+</div>
+<div class="body">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+    <div>
+      <h2 style="font-size:18px;font-weight:700">Casos registrados</h2>
+      <p style="font-size:11px;color:var(--muted);margin-top:2px" id="dsub">Reportes del sistema</p>
+    </div>
+    <button class="btn btn-g" onclick="ir('form-new')">+ Nuevo reporte</button>
+  </div>
+  <div class="stats">
+    <div class="sc a"><div class="sn" id="st0">0</div><div class="sl">Total casos</div></div>
+    <div class="sc h"><div class="sn" style="color:#f09595" id="st1">0</div><div class="sl">Alta severidad</div></div>
+    <div class="sc m"><div class="sn" style="color:#fac775" id="st2">0</div><div class="sl">En progreso</div></div>
+    <div class="sc o"><div class="sn" style="color:#97c459" id="st3">0</div><div class="sl">Completados</div></div>
+  </div>
+  <div class="tbar">
+    <div class="srch">Buscar: <input id="sq" placeholder="OT, cliente, tecnico..." oninput="renderT()"></div>
+    <select class="flt" id="ftec" onchange="renderT()"><option value="">Todos los tecnicos</option></select>
+    <select class="flt" id="fsev" onchange="renderT()"><option value="">Severidad</option><option>HIGH</option><option>MEDIUM</option><option>LOW</option></select>
+    <select class="flt" id="fsta" onchange="renderT()"><option value="">Estado</option><option>Abierto</option><option>En progreso</option><option>Completado</option></select>
+  </div>
+  <div class="tw">
+    <div class="th">
+      <div>OT</div><div>Equipo / Cliente</div><div>Tecnico</div>
+      <div>Fecha</div><div>Severidad</div><div>Estado</div><div>Acciones</div>
+    </div>
+    <div id="tbody"></div>
+  </div>
+</div>
+</div>
+
+<div class="screen" id="s-form">
+<div class="topbar">
+  <div class="brand" onclick="ir('dash')">A<span style="color:var(--gold)">D</span>S <span style="font-size:10px;font-weight:400;color:var(--muted);letter-spacing:1px">PORTAL</span></div>
+  <div class="tbr">
+    <button class="btn btn-o btn-s" onclick="ir('dash')">Volver</button>
+    <div class="av" id="av2">T</div>
+  </div>
+</div>
+<div class="body">
+  <div><h2 id="ftit" style="font-size:16px;font-weight:700">Nuevo reporte</h2><p style="font-size:11px;color:var(--muted);margin-top:2px">Completa todos los datos del caso</p></div>
+
+  <div class="fsec"><div class="ftit">Datos del tecnico</div><div class="fbody">
+    <div class="g2">
+      <div class="fld"><label>Nombre del tecnico <span class="r">*</span></label><input id="f0" placeholder="Ej. Adolfo Arevalo"></div>
+      <div class="fld"><label>Inspector asignado</label><input id="f1" placeholder="Nombre del inspector"></div>
+    </div>
+  </div></div>
+
+  <div class="fsec"><div class="ftit">Datos del equipo</div><div class="fbody">
+    <div class="g3">
+      <div class="fld"><label>N Inspeccion <span class="r">*</span></label><input id="f2" placeholder="Ej. 28242716"></div>
+      <div class="fld"><label>Cliente <span class="r">*</span></label><input id="f3" placeholder="Ej. MARVAL"></div>
+      <div class="fld"><label>Orden de trabajo <span class="r">*</span></label><input id="f4" placeholder="Ej. MAV-623"></div>
+      <div class="fld"><label>N Serial</label><input id="f5" placeholder="Ej. HBT401060ORS"></div>
+      <div class="fld"><label>Marca</label><input id="f6" placeholder="Ej. ZOOMLION"></div>
+      <div class="fld"><label>Modelo</label><input id="f7" placeholder="Ej. HBT40"></div>
+      <div class="fld"><label>Id de equipo</label><input id="f8" placeholder="Ej. Bomba concreto 15"></div>
+      <div class="fld"><label>SMU horas</label><input id="f9" type="number" placeholder="Ej. 628918"></div>
+      <div class="fld"><label>Ubicacion</label><input id="f10" placeholder="Ej. Barranquilla"></div>
+    </div>
+  </div></div>
+
+  <div class="fsec"><div class="ftit">Problema reportado</div><div class="fbody">
+    <div class="fld"><label>Descripcion general <span class="r">*</span></label>
+      <textarea id="f11" placeholder="Describe el problema que presenta el equipo..."></textarea></div>
+    <div class="fld"><label>Severidad <span class="r">*</span></label>
+      <div class="svs">
+        <button class="sv" id="sv-h" onclick="setSev('HIGH')">HIGH</button>
+        <button class="sv" id="sv-m" onclick="setSev('MEDIUM')">MEDIUM</button>
+        <button class="sv" id="sv-l" onclick="setSev('LOW')">LOW</button>
+      </div>
+    </div>
+    <div class="fld"><label>Actividades realizadas <span class="r">*</span></label>
+      <textarea id="f12" placeholder="- Se verifica nivel de aceite\n- Se comprueba sistema de refrigeracion..." style="min-height:140px"></textarea></div>
+  </div></div>
+
+  <div class="fsec"><div class="ftit">Costo del servicio</div><div class="fbody">
+    <div class="g2">
+      <div class="fld"><label>Valor COP <span class="r">*</span></label>
+        <div class="moneyw"><input id="f13" type="number" placeholder="0" min="0"></div></div>
+      <div class="fld"><label>Forma de pago</label>
+        <select id="f14"><option value="">Seleccionar...</option><option>Efectivo</option><option>Transferencia</option><option>Credito</option><option>Cheque</option></select></div>
+    </div>
+    <div class="fld"><label>Observaciones del costo</label>
+      <textarea id="f15" placeholder="Detalle de conceptos cobrados..." style="min-height:70px"></textarea></div>
+  </div></div>
+
+  <div class="fsec"><div class="ftit">Remisiones de compras</div><div class="fbody">
+    <p style="font-size:11px;color:var(--muted);margin-bottom:8px">Adjunta remisiones, facturas o recibos de repuestos.</p>
+    <div class="upzone" onclick="document.getElementById('inp-rem').click()">
+      <div>Adjuntar remisiones</div><small>PDF o imagenes - Clic para seleccionar</small>
+    </div>
+    <input type="file" id="inp-rem" multiple accept=".pdf,.jpg,.jpeg,.png,.webp" style="display:none" onchange="addDocs(this,'rem')">
+    <div class="flist" id="rem-list"></div>
+  </div></div>
+
+  <div class="fsec"><div class="ftit">Acta de entrega</div><div class="fbody">
+    <div class="upzone" onclick="document.getElementById('inp-act').click()">
+      <div>Adjuntar acta de entrega</div><small>PDF o imagen firmada - Clic para seleccionar</small>
+    </div>
+    <input type="file" id="inp-act" multiple accept=".pdf,.jpg,.jpeg,.png,.webp" style="display:none" onchange="addDocs(this,'act')">
+    <div class="flist" id="act-list"></div>
+    <div class="fld" style="margin-top:10px"><label>Observaciones del acta</label>
+      <textarea id="f16" placeholder="Condiciones de entrega, acuerdos, pendientes..." style="min-height:90px"></textarea></div>
+  </div></div>
+
+  <div class="fsec"><div class="ftit">Fotos del trabajo</div><div class="fbody">
+    <div class="upzone" onclick="document.getElementById('inp-ph').click()">
+      <div>Agregar fotos del trabajo</div><small>JPG o PNG - Agrega descripcion a cada foto</small>
+    </div>
+    <input type="file" id="inp-ph" multiple accept="image/*" style="display:none" onchange="addPhotos(this)">
+    <div class="pgrid" id="pgrid"></div>
+  </div></div>
+
+  <div class="factions">
+    <button class="btn btn-o" onclick="ir('dash')">Cancelar</button>
+    <button class="btn btn-g" onclick="guardar()">Guardar reporte</button>
+  </div>
+</div>
+</div>
+
+<div class="screen" id="s-det">
+<div class="topbar">
+  <div class="brand" onclick="ir('dash')">A<span style="color:var(--gold)">D</span>S <span style="font-size:10px;font-weight:400;color:var(--muted);letter-spacing:1px">PORTAL</span></div>
+  <div class="tbr">
+    <button class="btn btn-o btn-s" onclick="ir('dash')">Volver</button>
+    <div class="av" id="av3">A</div>
+  </div>
+</div>
+<div class="body" id="det-body"></div>
+</div>
+
+<div class="mbg" id="modal-nota">
+  <div class="mod">
+    <h3>Agregar nota admin</h3>
+    <p>Esta nota quedara visible en el detalle del caso.</p>
+    <div class="fld"><label>Nota</label><textarea id="inp-nota" style="min-height:80px" placeholder="Escribe tu observacion..."></textarea></div>
+    <div class="mact">
+      <button class="btn btn-o btn-s" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn btn-g btn-s" onclick="guardarNota()">Guardar nota</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var rol = 'tec';
+var usuario = null;
+var casos = [];
+var editId = null;
+var verId = null;
+var notaId = null;
+var remFs = [];
+var actFs = [];
+var phFs = [];
+
+casos = [
+  {id:'MAV-623',tec:'Adolfo Arevalo',ins:'Carlos Mendez',ninsp:'28242716',cli:'MARVAL',ot:'MAV-623',ser:'HBT401060ORS',mar:'ZOOMLION',mod:'HBT40',eid:'Bomba concreto 15',smu:'628918',loc:'Barranquilla',desc:'EQUIPO PRESENTA ALTA TEMPERATURA DE REFRIGERANTE',sev:'HIGH',acts:'- Se presta asistencia en sitio\n- Se verifica nivel de aceite. En rango de operacion\n- Se verifica nivel de refrigerante. No tenia nada en deposito\n- Se evidencia fuga por tuberia del tanque superior del radiador\n- Se desinstala radiador para lavado y reparacion',cost:'1800000',pay:'Transferencia',costObs:'Incluye mano de obra y traslado al contratista.',actObs:'Equipo entregado con radiador instalado. Pendiente revision indicador temperatura.',status:'Abierto',fecha:'06/04/2026',notas:[{txt:'Radiador enviado a contratista. Entrega 12/04/2026.',autor:'Admin',fecha:'08/04/2026'}],rems:[{name:'Remision_radiador.pdf',size:'320 KB'}],acts2:[{name:'Acta_entrega_MAV623.pdf',size:'180 KB'}],fotos:[{src:null,cap:'Arnes enrutado'},{src:null,cap:'Remocion radiador'},{src:null,cap:'Instalacion radiador'}]},
+  {id:'CON-441',tec:'Carlos Mendez',ins:'Luis Torres',ninsp:'29100452',cli:'CONCIVILES',ot:'CON-441',ser:'CAT320D002',mar:'CATERPILLAR',mod:'320D',eid:'Excavadora 3',smu:'12400',loc:'Cartagena',desc:'FUGA DE ACEITE HIDRAULICO EN CILINDRO DE BRAZO',sev:'MEDIUM',acts:'- Se inspecciona sistema hidraulico\n- Se identifica fuga en sello del cilindro del brazo\n- Se desmonta cilindro y se llevan sellos a rectificacion\n- Se instalan sellos nuevos y se prueba sistema',cost:'2500000',pay:'Credito',costObs:'Factura a 30 dias segun acuerdo.',actObs:'Excavadora entregada en perfectas condiciones.',status:'En progreso',fecha:'02/04/2026',notas:[],rems:[{name:'Factura_sellos.pdf',size:'215 KB'}],acts2:[],fotos:[{src:null,cap:'Fuga identificada'},{src:null,cap:'Desmontaje cilindro'}]},
+  {id:'PRY-218',tec:'Luis Torres',ins:'Adolfo Arevalo',ninsp:'30021887',cli:'PRYCO',ot:'PRY-218',ser:'LIE280T001',mar:'LIEBHERR',mod:'280 EC-H',eid:'Grua torre 1',smu:'4200',loc:'Barranquilla',desc:'REVISION PREVENTIVA POR HORAS DE OPERACION',sev:'LOW',acts:'- Se realiza cambio de aceite y filtros\n- Se revisan frenos y sistemas de seguridad\n- Se lubrica mecanismo de giro\n- Se verifica sistema electrico',cost:'950000',pay:'Efectivo',costObs:'Incluye repuestos y mano de obra.',actObs:'Grua entregada con mantenimiento al dia. Proximo PM a 4500 SMU.',status:'Completado',fecha:'28/03/2026',notas:[{txt:'Caso cerrado. Cliente conforme.',autor:'Admin',fecha:'30/03/2026'}],rems:[{name:'Remision_filtros.pdf',size:'145 KB'},{name:'Remision_lubricantes.pdf',size:'98 KB'}],acts2:[{name:'Acta_PRY218.pdf',size:'220 KB'}],fotos:[{src:null,cap:'Estado inicial'},{src:null,cap:'Cambio filtros'},{src:null,cap:'Equipo finalizado'}]}
+];
+
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(window._tt);window._tt=setTimeout(function(){t.style.display='none';},2500);}
+
+function ir(s){
+  var screens=['s-login','s-dash','s-form','s-det'];
+  for(var i=0;i<screens.length;i++){document.getElementById(screens[i]).className='screen';}
+  if(s==='dash'){document.getElementById('s-dash').className='screen on';renderDash();}
+  else if(s==='form-new'){editId=null;resetForm();document.getElementById('s-form').className='screen on';document.getElementById('ftit').textContent='Nuevo reporte';}
+  else if(s==='form-edit'){document.getElementById('s-form').className='screen on';document.getElementById('ftit').textContent='Editar reporte';}
+  else if(s==='det'){document.getElementById('s-det').className='screen on';renderDet();}
+  window.scrollTo(0,0);
+}
+
+function setRol(r){
+  rol=r;
+  document.getElementById('tab-tec').className='rtab'+(r==='tec'?' on':'');
+  document.getElementById('tab-adm').className='rtab'+(r==='adm'?' on':'');
+  document.getElementById('adm-ex').className='adm-ex'+(r==='adm'?' on':'');
+  document.getElementById('btn-login').textContent=r==='adm'?'Ingresar como Admin':'Ingresar como Tecnico';
+  document.getElementById('hint').textContent=r==='adm'?'Admin: cedula=admin123 y contrasena=admin123':'Tecnico: ingresa cualquier numero de cedula para acceder.';
+}
+
+function doLogin(){
+  var ced=document.getElementById('inp-ced').value.trim();
+  if(!ced){alert('Por favor ingresa tu numero de cedula');return;}
+  if(rol==='adm'){
+    var pwd=document.getElementById('inp-pwd').value.trim();
+    if(!pwd){alert('Por favor ingresa tu contrasena');return;}
+    if(pwd!=='admin123'){alert('Contrasena incorrecta. Usa: admin123');return;}
+    usuario={name:'Administrador',rol:'adm',ced:ced};
+  } else {
+    usuario={name:'Tecnico '+ced.slice(-4),rol:'tec',ced:ced};
+  }
+  document.getElementById('chip').textContent=rol==='adm'?'Admin':'Tecnico';
+  document.getElementById('av1').textContent=rol==='adm'?'A':'T';
+  document.getElementById('av2').textContent=rol==='adm'?'A':'T';
+  document.getElementById('av3').textContent=rol==='adm'?'A':'T';
+  ir('dash');
+}
+
+function salir(){
+  usuario=null;
+  document.getElementById('s-login').className='screen on';
+  document.getElementById('s-dash').className='screen';
+  document.getElementById('inp-ced').value='';
+  document.getElementById('inp-pwd').value='';
+}
+
+function sbg(s){return s==='HIGH'?'bh':s==='MEDIUM'?'bm':'bl';}
+function sts(s){return s==='Abierto'?'bo':s==='En progreso'?'bp':'bd';}
+function fmt(v){return v?'$'+Number(v).toLocaleString('es-CO')+' COP':'No registrado';}
+
+function renderDash(){
+  var isAdm=usuario&&usuario.rol==='adm';
+  document.getElementById('dsub').textContent=isAdm?'Vista de todos los reportes':'Mis reportes registrados';
+  var tecs=[...new Set(casos.map(function(c){return c.tec;}))];
+  var sel=document.getElementById('ftec');
+  sel.innerHTML='<option value="">Todos los tecnicos</option>'+tecs.map(function(t){return '<option>'+t+'</option>';}).join('');
+  sel.style.display=isAdm?'':'none';
+  document.getElementById('st0').textContent=casos.length;
+  document.getElementById('st1').textContent=casos.filter(function(c){return c.sev==='HIGH';}).length;
+  document.getElementById('st2').textContent=casos.filter(function(c){return c.status==='En progreso';}).length;
+  document.getElementById('st3').textContent=casos.filter(function(c){return c.status==='Completado';}).length;
+  renderT();
+}
+
+function renderT(){
+  var q=(document.getElementById('sq').value||'').toLowerCase();
+  var tec=document.getElementById('ftec').value;
+  var sev=document.getElementById('fsev').value;
+  var sta=document.getElementById('fsta').value;
+  var isAdm=usuario&&usuario.rol==='adm';
+  var rows=casos.filter(function(c){
+    if(!isAdm&&c.tec!==usuario.name)return false;
+    if(tec&&c.tec!==tec)return false;
+    if(sev&&c.sev!==sev)return false;
+    if(sta&&c.status!==sta)return false;
+    if(q&&!(c.ot+c.cli+c.tec+c.eid).toLowerCase().includes(q))return false;
+    return true;
+  });
+  var tb=document.getElementById('tbody');
+  if(!rows.length){tb.innerHTML='<div class="empty">No hay casos registrados</div>';return;}
+  tb.innerHTML=rows.map(function(c){
+    return '<div class="tr" onclick="verCaso(''+c.id+'')">'+
+    '<div class="td tid">'+c.ot+'</div>'+
+    '<div class="td"><div style="font-weight:600">'+c.eid+'</div><div class="tsub">'+c.cli+' / '+c.mar+' '+c.mod+'</div></div>'+
+    '<div class="td" style="color:var(--muted)">'+c.tec+'</div>'+
+    '<div class="td" style="color:var(--muted)">'+c.fecha+'</div>'+
+    '<div class="td"><span class="bg '+sbg(c.sev)+'">'+c.sev+'</span></div>'+
+    '<div class="td"><span class="bg '+sts(c.status)+'">'+c.status+'</span></div>'+
+    '<div class="td"><div class="rbtns" onclick="event.stopPropagation()">'+
+    '<button class="ib" onclick="event.stopPropagation();verCaso(''+c.id+'')">ver</button>'+
+    (isAdm?'<button class="ib" onclick="event.stopPropagation();editarCaso(''+c.id+'')">ed</button>':'')+
+    '<button class="ib" onclick="event.stopPropagation();genPDF(''+c.id+'')">pdf</button>'+
+    (isAdm?'<button class="ib del" onclick="event.stopPropagation();borrarCaso(''+c.id+'')">del</button>':'')+
+    '</div></div></div>';
+  }).join('');
+}
+
+function verCaso(id){verId=id;ir('det');}
+
+function renderDet(){
+  var c=casos.find(function(x){return x.id===verId;});
+  if(!c)return;
+  var isAdm=usuario&&usuario.rol==='adm';
+  var db=document.getElementById('det-body');
+  var inf=[['N Inspeccion',c.ninsp],['Cliente',c.cli],['N Serial',c.ser||'-'],['Orden trabajo',c.ot],
+    ['Marca',c.mar||'-'],['Modelo',c.mod||'-'],['Id equipo',c.eid||'-'],['SMU',c.smu?c.smu+' h':'-'],
+    ['Ubicacion',c.loc||'-'],['Inspector',c.ins||'-'],['Tecnico',c.tec],['Fecha',c.fecha]];
+  var h='<div class="dhc"><div>'+
+    '<div class="dtit">'+c.desc+'</div>'+
+    '<div class="dmeta">'+
+    '<span class="dmi">Tecnico: '+c.tec+'</span>'+
+    '<span class="dmi">Fecha: '+c.fecha+'</span>'+
+    '<span class="dmi">Lugar: '+c.loc+'</span>'+
+    '<span class="bg '+sbg(c.sev)+'">'+c.sev+'</span>'+
+    '<span class="bg '+sts(c.status)+'">'+c.status+'</span>'+
+    '</div></div>'+
+    '<div class="da">'+
+    (isAdm?'<select class="ssel" onchange="cambiarStatus(''+c.id+'',this.value)"><option'+(c.status==='Abierto'?' selected':'')+'>Abierto</option><option'+(c.status==='En progreso'?' selected':'')+'>En progreso</option><option'+(c.status==='Completado'?' selected':'')+'>Completado</option></select>':'')+
+    '<button class="btn btn-o btn-s" onclick="genPDF(''+c.id+'')">Exportar PDF</button>'+
+    (isAdm?'<button class="btn btn-g btn-s" onclick="editarCaso(''+c.id+'')">Editar</button>':'')+
+    '</div></div>';
+
+  h+='<div class="card"><div class="stit">Datos del equipo</div><div class="igrid">'+
+    inf.map(function(f){return '<div class="ic"><div class="icl">'+f[0]+'</div><div class="icv">'+(f[1]||'-')+'</div></div>';}).join('')+
+    '</div></div>';
+
+  h+='<div class="card"><div class="stit">Actividades realizadas</div><div class="alist">'+
+    c.acts.split('\n').filter(Boolean).map(function(a){return '<div class="ai"><span class="ad">-</span>'+a.replace(/^-\s*/,'')+'</div>';}).join('')+
+    '</div></div>';
+
+  h+='<div class="card"><div class="stit">Costo del servicio</div>'+
+    '<div class="ca">'+fmt(c.cost)+'<div class="cas">Forma de pago: '+(c.pay||'No especificada')+'</div></div>'+
+    (c.costObs?'<div style="padding:0 16px 14px;font-size:12px;color:var(--muted)">'+c.costObs+'</div>':'')+
+    '</div>';
+
+  h+='<div class="card"><div class="stit">Remisiones de compras</div><div class="dlist">'+
+    (c.rems&&c.rems.length?c.rems.map(function(r){return '<div class="di"><span style="color:var(--gold)">PDF</span><span class="dn">'+r.name+'</span><span class="dm">'+r.size+'</span></div>';}).join(''):'<div style="padding:10px 14px;font-size:12px;color:var(--muted)">Sin remisiones adjuntas</div>')+
+    '</div></div>';
+
+  h+='<div class="card"><div class="stit">Acta de entrega</div><div class="dlist">'+
+    (c.acts2&&c.acts2.length?c.acts2.map(function(a){return '<div class="di"><span style="color:var(--gold)">PDF</span><span class="dn">'+a.name+'</span><span class="dm">'+a.size+'</span></div>';}).join(''):'<div style="padding:10px 14px;font-size:12px;color:var(--muted)">Sin acta adjunta</div>')+
+    (c.actObs?'<div style="padding:10px 14px;font-size:12px;color:var(--muted);border-top:1px solid var(--d4)">Observaciones: '+c.actObs+'</div>':'')+
+    '</div></div>';
+
+  if(c.fotos&&c.fotos.length){
+    h+='<div class="card"><div class="stit">Fotos del trabajo</div><div class="ggrid">'+
+      c.fotos.map(function(p){return '<div class="gi">'+
+        (p.src?'<div class="gm"><img src="'+p.src+'"></div>':'<div class="gm">FOTO</div>')+
+        '<div class="gc">'+(p.cap||'Sin descripcion')+'</div></div>';}).join('')+'</div></div>';
+  }
+
+  if(isAdm){
+    h+='<div class="card"><div class="stit">Notas del administrador</div><div class="nb">'+
+      (c.notas&&c.notas.length?c.notas.map(function(n){return '<div class="nc">'+n.txt+'<div class="nau">'+n.autor+' - '+n.fecha+'</div></div>';}).join(''):'<div style="font-size:12px;color:var(--muted);margin-bottom:8px">Sin notas aun.</div>')+
+      '<button class="nadd" onclick="abrirModal(''+c.id+'')">+ Agregar nota</button></div></div>';
+  }
+
+  h+='<div class="dfooter">'+
+    '<button class="btn btn-o btn-s" onclick="ir('dash')">Volver</button>'+
+    '<button class="btn btn-o btn-s" onclick="genPDF(''+c.id+'')">Exportar PDF</button>'+
+    (isAdm?'<button class="btn btn-g btn-s" onclick="cambiarStatus(''+c.id+'','Completado')">Marcar completado</button>':'')+
+    '</div>';
+
+  db.innerHTML=h;
+}
+
+function resetForm(){
+  for(var i=0;i<=16;i++){var e=document.getElementById('f'+i);if(e)e.value='';}
+  document.getElementById('sv-h').className='sv';
+  document.getElementById('sv-m').className='sv';
+  document.getElementById('sv-l').className='sv';
+  window._sev='';
+  remFs=[];actFs=[];phFs=[];
+  document.getElementById('rem-list').innerHTML='';
+  document.getElementById('act-list').innerHTML='';
+  document.getElementById('pgrid').innerHTML='';
+}
+
+function setSev(v){
+  window._sev=v;
+  document.getElementById('sv-h').className='sv'+(v==='HIGH'?' h':'');
+  document.getElementById('sv-m').className='sv'+(v==='MEDIUM'?' m':'');
+  document.getElementById('sv-l').className='sv'+(v==='LOW'?' l':'');
+}
+
+function addDocs(inp,tipo){
+  var fs=Array.from(inp.files);
+  if(tipo==='rem'){remFs=remFs.concat(fs);renderFiles('rem-list',remFs,'rem');}
+  else{actFs=actFs.concat(fs);renderFiles('act-list',actFs,'act');}
+  inp.value='';
+}
+
+function renderFiles(cid,files,tipo){
+  document.getElementById(cid).innerHTML=files.map(function(f,i){
+    return '<div class="fi"><span style="color:var(--gold);font-size:11px">'+
+      (f.name.endsWith('.pdf')?'PDF':'IMG')+'</span>'+
+      '<span class="fin">'+f.name+'</span>'+
+      '<span class="fis">'+Math.round(f.size/1024)+' KB</span>'+
+      '<button class="fid" onclick="quitarFile(''+tipo+'','+i+')">x</button></div>';
+  }).join('');
+}
+
+function quitarFile(tipo,i){
+  if(tipo==='rem'){remFs.splice(i,1);renderFiles('rem-list',remFs,'rem');}
+  else{actFs.splice(i,1);renderFiles('act-list',actFs,'act');}
+}
+
+function addPhotos(inp){
+  Array.from(inp.files).forEach(function(f){
+    var r=new FileReader();
+    r.onload=function(e){phFs.push({src:e.target.result,cap:''});renderPhotos();};
+    r.readAsDataURL(f);
+  });
+  inp.value='';
+}
+
+function renderPhotos(){
+  document.getElementById('pgrid').innerHTML=phFs.map(function(p,i){
+    return '<div class="pcard"><img src="'+p.src+'">'+
+      '<div class="pcap"><input placeholder="Descripcion..." value="'+p.cap+'" oninput="phFs['+i+'].cap=this.value"></div>'+
+      '<button class="pdel" onclick="phFs.splice('+i+',1);renderPhotos()">Quitar</button></div>';
+  }).join('');
+}
+
+function guardar(){
+  var req=['f0','f2','f3','f4','f11','f12'];
+  for(var i=0;i<req.length;i++){if(!document.getElementById(req[i]).value.trim()){alert('Completa los campos obligatorios marcados con *');return;}}
+  if(!window._sev){alert('Selecciona la severidad del problema');return;}
+  var now=new Date();
+  var d=String(now.getDate()).padStart(2,'0')+'/'+String(now.getMonth()+1).padStart(2,'0')+'/'+now.getFullYear();
+  var nc={
+    id:document.getElementById('f4').value.trim(),
+    tec:document.getElementById('f0').value.trim(),
+    ins:document.getElementById('f1').value.trim(),
+    ninsp:document.getElementById('f2').value.trim(),
+    cli:document.getElementById('f3').value.trim(),
+    ot:document.getElementById('f4').value.trim(),
+    ser:document.getElementById('f5').value.trim(),
+    mar:document.getElementById('f6').value.trim(),
+    mod:document.getElementById('f7').value.trim(),
+    eid:document.getElementById('f8').value.trim(),
+    smu:document.getElementById('f9').value.trim(),
+    loc:document.getElementById('f10').value.trim(),
+    desc:document.getElementById('f11').value.trim().toUpperCase(),
+    sev:window._sev,
+    acts:document.getElementById('f12').value.trim(),
+    cost:document.getElementById('f13').value,
+    pay:document.getElementById('f14').value,
+    costObs:document.getElementById('f15').value.trim(),
+    actObs:document.getElementById('f16').value.trim(),
+    status:'Abierto',fecha:d,notas:[],
+    rems:remFs.map(function(f){return {name:f.name,size:Math.round(f.size/1024)+' KB'};}),
+    acts2:actFs.map(function(f){return {name:f.name,size:Math.round(f.size/1024)+' KB'};}),
+    fotos:phFs.map(function(p){return {src:p.src,cap:p.cap};})
+  };
+  if(editId){
+    var idx=casos.findIndex(function(c){return c.id===editId;});
+    if(idx>-1){nc.notas=casos[idx].notas;casos[idx]=nc;}
+  } else {
+    casos.unshift(nc);
+  }
+  toast('Reporte guardado exitosamente');
+  setTimeout(function(){ir('dash');},800);
+}
+
+function editarCaso(id){
+  var c=casos.find(function(x){return x.id===id;});
+  if(!c)return;
+  editId=id;resetForm();
+  var fmap=[c.tec,c.ins,c.ninsp,c.cli,c.ot,c.ser,c.mar,c.mod,c.eid,c.smu,c.loc,c.desc,c.acts,c.cost,c.pay,c.costObs,c.actObs];
+  for(var i=0;i<fmap.length;i++){var e=document.getElementById('f'+i);if(e)e.value=fmap[i]||'';}
+  if(c.sev)setSev(c.sev);
+  phFs=c.fotos?c.fotos.slice():[];
+  renderPhotos();
+  ir('form-edit');
+}
+
+function borrarCaso(id){
+  if(!confirm('Eliminar este reporte?'))return;
+  casos=casos.filter(function(c){return c.id!==id;});
+  renderDash();
+  toast('Reporte eliminado');
+}
+
+function cambiarStatus(id,s){
+  var c=casos.find(function(x){return x.id===id;});
+  if(c){c.status=s;toast('Estado actualizado: '+s);if(verId===id)renderDet();}
+}
+
+function abrirModal(id){
+  notaId=id;
+  document.getElementById('inp-nota').value='';
+  document.getElementById('modal-nota').className='mbg on';
+}
+function cerrarModal(){document.getElementById('modal-nota').className='mbg';}
+function guardarNota(){
+  var txt=document.getElementById('inp-nota').value.trim();
+  if(!txt){alert('Escribe una nota');return;}
+  var c=casos.find(function(x){return x.id===notaId;});
+  if(c){
+    var now=new Date();
+    var d=String(now.getDate()).padStart(2,'0')+'/'+String(now.getMonth()+1).padStart(2,'0')+'/'+now.getFullYear();
+    c.notas.push({txt:txt,autor:'Admin',fecha:d});
+    cerrarModal();renderDet();toast('Nota guardada');
+  }
+}
+
+function genPDF(id){
+  var c=casos.find(function(x){return x.id===id;});
+  if(!c){alert('Caso no encontrado');return;}
+  var jsPDF=window.jspdf&&window.jspdf.jsPDF;
+  if(!jsPDF){alert('Libreria PDF cargando, intenta en un momento');return;}
+  var doc=new jsPDF({unit:'mm',format:'a4'});
+  var pw=210,ml=14,usable=pw-28,y=14;
+  function cy(n){if(y+n>282){doc.addPage();y=14;}}
+  doc.setFillColor(26,26,26);doc.rect(0,0,pw,22,'F');
+  doc.setFillColor(200,146,10);doc.rect(0,0,pw,2,'F');
+  doc.setFontSize(14);doc.setFont('helvetica','bold');doc.setTextColor(240,240,240);
+  doc.text('ADS',ml,13);
+  doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(136,136,136);
+  doc.text('ATLANTIC DIESEL SERVICE',ml+12,13);
+  doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(200,146,10);
+  doc.text('REPORTE TECNICO',pw-14,13,{align:'right'});
+  y=28;
+  var sc=c.sev==='HIGH'?[226,75,74]:c.sev==='MEDIUM'?[239,159,39]:[99,153,34];
+  var dl=doc.splitTextToSize(c.desc,usable-40);
+  doc.setFontSize(13);doc.setFont('helvetica','bold');doc.setTextColor(240,240,240);
+  doc.text(dl,ml,y);
+  doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(sc[0],sc[1],sc[2]);
+  doc.text(c.sev,pw-14,y,{align:'right'});
+  y+=dl.length*6+5;
+  doc.setFillColor(50,50,50);doc.rect(ml,y,usable,.3,'F');y+=5;
+  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(136,136,136);
+  doc.text('Tecnico: '+c.tec,ml,y);doc.text('Fecha: '+c.fecha,pw/2,y,{align:'center'});doc.text('Estado: '+c.status,pw-14,y,{align:'right'});y+=10;
+  function sec(t){cy(10);doc.setFillColor(26,26,26);doc.rect(ml,y,usable,7,'F');doc.setFillColor(200,146,10);doc.rect(ml,y,2,7,'F');doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(136,136,136);doc.text(t,ml+5,y+5);y+=10;}
+  sec('DATOS DEL EQUIPO');
+  var ff=[['N Inspeccion',c.ninsp,'Cliente',c.cli],['N Serial',c.ser||'-','Orden trabajo',c.ot],['Marca',c.mar||'-','Modelo',c.mod||'-'],['Id equipo',c.eid||'-','SMU',c.smu?c.smu+' h':'-'],['Ubicacion',c.loc||'-','Inspector',c.ins||'-']];
+  ff.forEach(function(r){cy(7);doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(136,136,136);doc.text(r[0],ml,y);doc.text(r[2],pw/2+2,y);doc.setFont('helvetica','bold');doc.setTextColor(240,240,240);doc.text(r[1]||'-',ml+32,y);doc.text(r[3]||'-',pw/2+34,y);y+=7;});y+=4;
+  sec('ACTIVIDADES REALIZADAS');
+  c.acts.split('\n').filter(Boolean).forEach(function(a){var ln=doc.splitTextToSize(a.replace(/^-\s*/,'- '),usable-5);ln.forEach(function(l){cy(5);doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(180,180,180);doc.text(l,ml+3,y);y+=5;});});y+=4;
+  if(c.cost){sec('COSTO DEL SERVICIO');doc.setFontSize(16);doc.setFont('helvetica','bold');doc.setTextColor(200,146,10);doc.text(fmt(c.cost),ml,y);doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(136,136,136);doc.text('Pago: '+(c.pay||'-'),ml,y+7);y+=16;if(c.costObs){var cl=doc.splitTextToSize(c.costObs,usable);cl.forEach(function(l){cy(5);doc.setFontSize(8);doc.setTextColor(180,180,180);doc.text(l,ml,y);y+=5;});}y+=4;}
+  if(c.rems&&c.rems.length){sec('REMISIONES');c.rems.forEach(function(r){cy(6);doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(200,146,10);doc.text('*',ml,y);doc.setTextColor(180,180,180);doc.text(r.name,ml+5,y);doc.setTextColor(136,136,136);doc.text(r.size||'',pw-14,y,{align:'right'});y+=6;});y+=4;}
+  if(c.acts2&&c.acts2.length){sec('ACTA DE ENTREGA');c.acts2.forEach(function(a){cy(6);doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(200,146,10);doc.text('*',ml,y);doc.setTextColor(180,180,180);doc.text(a.name,ml+5,y);y+=6;});if(c.actObs){var al=doc.splitTextToSize(c.actObs,usable);al.forEach(function(l){cy(5);doc.setFontSize(8);doc.setTextColor(180,180,180);doc.text(l,ml,y);y+=5;});}y+=4;}
+  if(c.fotos&&c.fotos.length){sec('EVIDENCIAS FOTOGRAFICAS');var iw=55,ih=40,gap=8,col=0;c.fotos.forEach(function(p){var px=ml+col*(iw+gap);cy(ih+12);if(p.src){try{doc.addImage(p.src,'JPEG',px,y,iw,ih);}catch(e){doc.setFillColor(40,40,40);doc.rect(px,y,iw,ih,'F');}}else{doc.setFillColor(40,40,40);doc.rect(px,y,iw,ih,'F');}if(p.cap){doc.setFontSize(7);doc.setTextColor(136,136,136);doc.text(p.cap,px,y+ih+4);}col++;if(col===3){col=0;y+=ih+14;}});if(col>0)y+=ih+14;}
+  var tp=doc.getNumberOfPages();
+  for(var i=1;i<=tp;i++){doc.setPage(i);doc.setFillColor(26,26,26);doc.rect(0,285,pw,12,'F');doc.setFillColor(200,146,10);doc.rect(0,285,pw,.5,'F');doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(136,136,136);doc.text('Atlantic Diesel Service Barranquilla Colombia',ml,291);doc.text('Pag '+i+' de '+tp,pw-14,291,{align:'right'});}
+  doc.save('Reporte_ADS_'+c.ot+'.pdf');
+  toast('PDF descargado');
+}
+</script>
+</body>
+</html>
